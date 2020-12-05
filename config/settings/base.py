@@ -7,7 +7,7 @@ import environ
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # whatsmedia/
-APPS_DIR = ROOT_DIR / "whatsmedia"
+APPS_DIR = ROOT_DIR / "apps"
 env = environ.Env()
 
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)
@@ -42,9 +42,21 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="postgres:///whatsmedia")
+    "default": env.db("DATABASE_URL", default="postgres:///whatsmedia"),
+    "messages": env.db("DATABASE_URL", default="sqlite:///msgstore.db"),
+    "contacts": env.db("DATABASE_URL", default="sqlite:///wa.db"),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
+
+
+DATABASE_ROUTERS = ['apps.utils.databases.DatabaseAppsRouter']
+DATABASE_APPS_MAPPING = {
+    'whats': 'default',
+    'whatsapp': 'messages',
+    'contacts': 'contacts',
+}
+
+
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -75,7 +87,9 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "whatsmedia.users.apps.UsersConfig",
+    "apps.users.apps.UsersConfig",
+    "apps.contacts.apps.ContactsConfig",
+    "apps.whatsapp.apps.WhatsappConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -84,7 +98,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # MIGRATIONS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#migration-modules
-MIGRATION_MODULES = {"sites": "whatsmedia.contrib.sites.migrations"}
+MIGRATION_MODULES = {"sites": "apps.contrib.sites.migrations"}
 
 # AUTHENTICATION
 # ------------------------------------------------------------------------------
@@ -182,7 +196,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "whatsmedia.utils.context_processors.settings_context",
+                "apps.utils.context_processors.settings_context",
             ],
         },
     }
@@ -285,9 +299,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_ADAPTER = "whatsmedia.users.adapters.AccountAdapter"
+ACCOUNT_ADAPTER = "apps.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-SOCIALACCOUNT_ADAPTER = "whatsmedia.users.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "apps.users.adapters.SocialAccountAdapter"
 
 
 # Your stuff...
